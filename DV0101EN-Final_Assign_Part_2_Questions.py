@@ -6,7 +6,7 @@
 
 import dash
 from dash import dcc
-from dash import html ctx
+from dash import html, ctx
 from dash.dependencies import Input, Output
 import pandas as pd
 import plotly.graph_objs as go
@@ -25,7 +25,7 @@ app = dash.Dash(__name__)
 # Create the dropdown menu options
 dropdown_options = [
     {'label': 'Yearly Statistics', 'value': 'Yearly Statistics'},
-    {'label': 'Recession Period Statistics', 'value': 'Recessions Statistics'}
+    {'label': 'Recession Period Statistics', 'value': 'Recession Period Statistics'}
 ]
 # List of years 
 year_list = [i for i in range(1980, 2024, 1)]
@@ -38,14 +38,14 @@ app.layout = html.Div([
         html.Label("Select Statistics:"),
         dcc.Dropdown(
             id='dropdown-statistics',
-            options=dropdown-statistics,
+            options=dropdown_options,
             value='Select Statistics',
         )
     ]),
     html.Div(dcc.Dropdown(
             id='select-year',
-            options=[{'label':i, 'value':i,}for i in year_list],
-            value='Select a year'
+            options=[{'label':i, 'value':i}for i in year_list],
+            value='Select-year'
         )),
     html.Div([#TASK 2.3: Add a division for output display
     html.Div(id='output-container', className='chart-grid', style={'display':'flex'}),])
@@ -66,7 +66,7 @@ def update_input_container(selected_statistics):
 # Define the callback function to update the input container based on the selected statistics
 @app.callback(
     Output(component_id='output-container', component_property='children'),
-    [Input(component_id='dropdown-statistics', component_property='value'), Input(component_id='select-year', component_property='children')])
+    [Input(component_id='dropdown-statistics', component_property='value'), Input(component_id='select-year', component_property='value')])
 
 
 def update_output_container(selected_statistics, input_year):
@@ -88,16 +88,16 @@ def update_output_container(selected_statistics, input_year):
 #Plot 2 Calculate the average number of vehicles sold by vehicle type       
         # use groupby to create relevant data for plotting
         average_sales = recession_data.groupby('Vehicle_Type')['Automobile_Sales'].mean().reset_index()                           
-        R_chart2  = dcc.Graph(figure=px.bar(average_sales, x='Vehicle_Type', y='Automobile_Sales', title='Average Number of Vehicles Sold by Vehicle Type;')
+        R_chart2  = dcc.Graph(figure=px.bar(average_sales, x='Vehicle_Type', y='Automobile_Sales', title='Average Number of Vehicles Sold by Vehicle Type;'))
         
 # Plot 3 Pie chart for total expenditure share by vehicle type during recessions
         # use groupby to create relevant data for plotting
-        exp_rec= recession_data.groupby(['Automobile_Sales'])
-        R_chart3 = dcc.Graph(figure=px.pie(exp_rec,title='Total Expenditure Share by Vehicle Type during Recessions'))
+        exp_rec= recession_data.groupby('Vehicle_Type')['Advertising_Expenditure'].sum().reset_index()
+        R_chart3 = dcc.Graph(figure=px.pie(exp_rec,values='Advertising_Expenditure',names='Vehicle_Type','title='Total Advertising Expenditure Share of Vehicle Type during Recession'))
 
 # Plot 4 bar chart for the effect of unemployment rate on vehicle type and sales
-        sales=recession_data.groupby(['unemployment_rate','Vehicle_Type'])['Automobile_Sales'].mean().reset_index()
-        R_chart4=dcc.Graph(figure=px.bar(sales,x='unemployment_rate', y='Automobile_Sales',labels={'unemployment_rate':'Unemployent_Rate', 'Automobile_Sales':'Sales'},title='Effect of Unemployment Rate on Vehicle Type and Sale'))
+        sales=recession_data.groupby(['Vehicle_Type','unemployment_rate'])['Automobile_Sales'].mean().reset_index()
+        R_chart4=dcc.Graph(figure=px.bar(sales,x='unemployment_rate', y='Vehicle_Type', color= 'blue','red',labels={'unemployment_rate':'Unemployent_Rate', 'Automobile_Sales':'Average Automobile Sales'},title='Effect of Unemployment Rate on Sales of Various Vehicle Types'))
 
 
         return [
